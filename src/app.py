@@ -22,10 +22,15 @@ st.set_page_config(page_title="MediPal Dashboard", layout="wide")
 # Load CSS
 # ----------------------------
 def local_css(file_name):
-    with open(file_name) as f:
-        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+    css_path = os.path.join(os.path.dirname(__file__), file_name)
+    if os.path.exists(css_path):
+        with open(css_path) as f:
+            st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+    else:
+        st.warning(f"CSS file not found: {css_path}")
 
 local_css("static/css/style.css")
+
 
 # ----------------------------
 # Header Image and Title
