@@ -35,12 +35,11 @@ local_css("static/css/style.css")
 # ----------------------------
 # Header Image and Title
 # ----------------------------
-try:
-    st.image("static/images/logo.png", width=150)
-except:
+logo_path = os.path.join(os.path.dirname(__file__), "static/images/logo.png")
+if os.path.exists(logo_path):
+    st.image(logo_path, width=150)
+else:
     st.warning("Logo not found! Place it in static/images/logo.png")
-st.title("💊 MediPal Dashboard")
-st.write("Monitor patients, caregivers, medicines, prescriptions, reminders, and notifications.")
 
 # ----------------------------
 # Session State
