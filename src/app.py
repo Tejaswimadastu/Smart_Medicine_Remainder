@@ -30,7 +30,10 @@ local_css("static/css/style.css")
 # ----------------------------
 # Header Image and Title
 # ----------------------------
-st.image("static/images/logo.png", width=150)
+try:
+    st.image("static/images/logo.png", width=150)
+except:
+    st.warning("Logo not found! Place it in static/images/logo.png")
 st.title("💊 MediPal Dashboard")
 st.write("Monitor patients, caregivers, medicines, prescriptions, reminders, and notifications.")
 
