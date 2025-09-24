@@ -1,0 +1,17 @@
+body {
+    background-color: #f4f6f8;
+    font-family: Arial, sans-serif;
+}
+
+.stButton>button {
+    background-color: #4CAF50;
+    color: white;
+    border-radius: 5px;
+    padding: 0.5rem 1rem;
+    margin-top: 5px;
+}
+
+.stDataFrame {
+    border-radius: 8px;
+    padding: 10px;
+}

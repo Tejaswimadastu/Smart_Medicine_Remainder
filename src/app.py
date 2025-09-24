@@ -2,68 +2,225 @@ import streamlit as st
 from supabase import create_client
 import os
 from dotenv import load_dotenv
+import bcrypt
+import datetime
 
+# ----------------------------
 # Load environment variables
+# ----------------------------
 load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
-
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
+# ----------------------------
+# Page config
+# ----------------------------
 st.set_page_config(page_title="MediPal Dashboard", layout="wide")
 
+# ----------------------------
+# Load CSS
+# ----------------------------
+def local_css(file_name):
+    with open(file_name) as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
+
+local_css("static/css/style.css")
+
+# ----------------------------
+# Header Image and Title
+# ----------------------------
+st.image("static/images/logo.png", width=150)
 st.title("💊 MediPal Dashboard")
 st.write("Monitor patients, caregivers, medicines, prescriptions, reminders, and notifications.")
 
-# Tabs for different tables
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
-    ["👤 Patients", "🧑‍⚕️ Caregivers", "💊 Medicines", "📋 Prescriptions", "⏰ Reminders", "🔔 Notifications"]
-)
+# ----------------------------
+# Session State
+# ----------------------------
+if 'logged_in' not in st.session_state:
+    st.session_state.logged_in = False
+    st.session_state.user = None
 
-with tab1:
-    st.subheader("Patients")
-    patients = supabase.table("patients").select("*").execute().data
-    if patients:
-        st.dataframe(patients)
-    else:
-        st.info("No patients found.")
+# ----------------------------
+# Helper Functions
+# ----------------------------
+def signup_user(name, email, password):
+    hashed_pw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
+    supabase.table("users").insert({
+        "name": name,
+        "email": email,
+        "password": hashed_pw
+    }).execute()
+    st.success("✅ Account created successfully! Please login.")
 
-with tab2:
-    st.subheader("Caregivers")
-    caregivers = supabase.table("caregivers").select("*").execute().data
-    if caregivers:
-        st.dataframe(caregivers)
+def login_user(email, password):
+    user = supabase.table("users").select("*").eq("email", email).execute().data
+    if user:
+        hashed_pw = user[0]['password']
+        if bcrypt.checkpw(password.encode('utf-8'), hashed_pw.encode('utf-8')):
+            st.session_state.logged_in = True
+            st.session_state.user = user[0]
+            st.success(f"Welcome {user[0]['name']}!")
+        else:
+            st.error("❌ Incorrect password")
     else:
-        st.info("No caregivers found.")
+        st.error("❌ User not found")
 
-with tab3:
-    st.subheader("Medicines")
-    medicines = supabase.table("medicines").select("*").execute().data
-    if medicines:
-        st.dataframe(medicines)
-    else:
-        st.info("No medicines found.")
+# ----------------------------
+# Login / Signup
+# ----------------------------
+if not st.session_state.logged_in:
+    st.subheader("💻 Login / Signup")
+    choice = st.radio("Select Option", ["Login", "Sign Up"])
+    
+    if choice == "Sign Up":
+        st.subheader("Create a new account")
+        name = st.text_input("Name")
+        email = st.text_input("Email")
+        password = st.text_input("Password", type="password")
+        if st.button("Sign Up"):
+            signup_user(name, email, password)
+    
+    if choice == "Login":
+        st.subheader("Login to your account")
+        email = st.text_input("Email", key="login_email")
+        password = st.text_input("Password", type="password", key="login_password")
+        if st.button("Login"):
+            login_user(email, password)
 
-with tab4:
-    st.subheader("Prescriptions")
-    prescriptions = supabase.table("prescriptions").select("*").execute().data
-    if prescriptions:
-        st.dataframe(prescriptions)
-    else:
-        st.info("No prescriptions found.")
+# ----------------------------
+# Dashboard Tabs
+# ----------------------------
+if st.session_state.logged_in:
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
+        ["👤 Patients", "🧑‍⚕️ Caregivers", "💊 Medicines", "📋 Prescriptions", "⏰ Reminders", "🔔 Notifications"]
+    )
 
-with tab5:
-    st.subheader("Reminders")
-    reminders = supabase.table("reminders").select("*").execute().data
-    if reminders:
-        st.dataframe(reminders)
-    else:
-        st.info("No reminders found.")
+    # Patients Tab
+    with tab1:
+        st.subheader("Patients")
+        patients = supabase.table("patients").select("*").execute().data
+        st.dataframe(patients if patients else [])
+        with st.form("add_patient_form"):
+            name = st.text_input("Name")
+            age = st.number_input("Age", min_value=0)
+            gender = st.selectbox("Gender", ["Male", "Female", "Other"])
+            contact = st.text_input("Contact")
+            email = st.text_input("Email")
+            address = st.text_area("Address")
+            submitted = st.form_submit_button("Add Patient")
+            if submitted:
+                supabase.table("patients").insert({
+                    "name": name,
+                    "age": age,
+                    "gender": gender,
+                    "contact": contact,
+                    "email": email,
+                    "address": address
+                }).execute()
+                st.success(f"Patient {name} added!")
 
-with tab6:
-    st.subheader("Notifications")
-    notifications = supabase.table("notifications").select("*").execute().data
-    if notifications:
-        st.dataframe(notifications)
-    else:
-        st.info("No notifications found.")
+    # Caregivers Tab
+    with tab2:
+        st.subheader("Caregivers")
+        caregivers = supabase.table("caregivers").select("*").execute().data
+        st.dataframe(caregivers if caregivers else [])
+        with st.form("add_caregiver_form"):
+            name = st.text_input("Name", key="cg_name")
+            contact = st.text_input("Contact", key="cg_contact")
+            email = st.text_input("Email", key="cg_email")
+            relationship = st.text_input("Relationship", key="cg_relation")
+            assigned_patient_id = st.number_input("Assigned Patient ID", min_value=0, key="cg_patient")
+            submitted = st.form_submit_button("Add Caregiver")
+            if submitted:
+                supabase.table("caregivers").insert({
+                    "name": name,
+                    "contact": contact,
+                    "email": email,
+                    "relationship": relationship,
+                    "assigned_patient_id": assigned_patient_id
+                }).execute()
+                st.success(f"Caregiver {name} added!")
+
+    # Medicines Tab
+    with tab3:
+        st.subheader("Medicines")
+        medicines = supabase.table("medicines").select("*").execute().data
+        st.dataframe(medicines if medicines else [])
+        with st.form("add_medicine_form"):
+            name = st.text_input("Medicine Name", key="med_name")
+            dosage = st.text_input("Dosage", key="med_dosage")
+            frequency = st.text_input("Frequency", key="med_freq")
+            description = st.text_area("Description", key="med_desc")
+            submitted = st.form_submit_button("Add Medicine")
+            if submitted:
+                supabase.table("medicines").insert({
+                    "name": name,
+                    "dosage": dosage,
+                    "frequency": frequency,
+                    "description": description
+                }).execute()
+                st.success(f"Medicine {name} added!")
+
+    # Prescriptions Tab
+    with tab4:
+        st.subheader("Prescriptions")
+        prescriptions = supabase.table("prescriptions").select("*").execute().data
+        st.dataframe(prescriptions if prescriptions else [])
+        with st.form("add_prescription_form"):
+            patient_id = st.number_input("Patient ID", min_value=0, key="pres_patient")
+            medicine_id = st.number_input("Medicine ID", min_value=0, key="pres_med")
+            start_date = st.date_input("Start Date", key="pres_start")
+            end_date = st.date_input("End Date", key="pres_end")
+            instructions = st.text_area("Instructions", key="pres_instr")
+            submitted = st.form_submit_button("Add Prescription")
+            if submitted:
+                supabase.table("prescriptions").insert({
+                    "patient_id": patient_id,
+                    "medicine_id": medicine_id,
+                    "start_date": start_date.isoformat(),
+                    "end_date": end_date.isoformat(),
+                    "instructions": instructions
+                }).execute()
+                st.success(f"Prescription added for Patient ID {patient_id}!")
+
+    # Reminders Tab
+    with tab5:
+        st.subheader("Reminders")
+        reminders = supabase.table("reminders").select("*").execute().data
+        st.dataframe(reminders if reminders else [])
+        with st.form("add_reminder_form"):
+            prescription_id = st.number_input("Prescription ID", min_value=0, key="rem_pres")
+            reminder_time = st.time_input("Reminder Time", key="rem_time")
+            submitted = st.form_submit_button("Add Reminder")
+            if submitted:
+                supabase.table("reminders").insert({
+                    "prescription_id": prescription_id,
+                    "reminder_time": reminder_time.strftime("%H:%M:%S"),
+                    "status": "Pending"
+                }).execute()
+                st.success(f"Reminder added for Prescription ID {prescription_id}!")
+
+    # Notifications Tab
+    with tab6:
+        st.subheader("Notifications")
+        notifications = supabase.table("notifications").select("*").execute().data
+        st.dataframe(notifications if notifications else [])
+        with st.form("send_notification_form"):
+            reminder_id = st.number_input("Reminder ID", min_value=0, key="notif_rem")
+            message = st.text_area("Message", key="notif_msg")
+            submitted = st.form_submit_button("Send Notification")
+            if submitted:
+                supabase.table("notifications").insert({
+                    "reminder_id": reminder_id,
+                    "sent_time": datetime.datetime.now().isoformat(),
+                    "delivery_status": "Sent",
+                    "message": message
+                }).execute()
+                st.success(f"Notification sent for Reminder ID {reminder_id}!")
+
+    # Logout
+    if st.button("Logout"):
+        st.session_state.logged_in = False
+        st.session_state.user = None
+        st.experimental_rerun()
