@@ -57,7 +57,7 @@ def login_user(email, password):
         if bcrypt.checkpw(password.encode('utf-8'), hashed_pw.encode('utf-8')):
             st.session_state.logged_in = True
             st.session_state.user = user[0]
-            st.experimental_rerun()
+            st.rerun()
         else:
             st.error("❌ Incorrect password")
     else:
@@ -228,4 +228,4 @@ if st.session_state.logged_in:
     if st.button("🚪 Logout"):
         st.session_state.logged_in = False
         st.session_state.user = None
-        st.experimental_rerun()
+        st.rerun()
