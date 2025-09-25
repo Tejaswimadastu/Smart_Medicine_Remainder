@@ -6,8 +6,6 @@ import bcrypt
 import datetime
 
 st.set_page_config(page_title="MediPal", page_icon="💊", layout="centered")
-
-# Hide Streamlit's default header and footer
 hide_st_style = """
     <style>
     header {visibility: hidden;}
@@ -16,22 +14,13 @@ hide_st_style = """
     </style>
 """
 st.markdown(hide_st_style, unsafe_allow_html=True)
-# ----------------------------
-# Load environment variables
-# ----------------------------
 load_dotenv()
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 supabase = create_client(SUPABASE_URL, SUPABASE_KEY)
 
-# ----------------------------
-# Page config
-# ----------------------------
 st.set_page_config(page_title="MediPal Dashboard", layout="wide")
 
-# ----------------------------
-# Load CSS
-# ----------------------------
 def local_css(file_name):
     css_path = os.path.join(os.path.dirname(__file__), file_name)
     if os.path.exists(css_path):
