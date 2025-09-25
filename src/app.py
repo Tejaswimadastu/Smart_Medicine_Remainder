@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 import bcrypt
 import datetime
+
 # ----------------------------
 # Load environment variables
 # ----------------------------
@@ -28,11 +29,7 @@ def local_css(file_name):
     else:
         st.warning(f"CSS file not found: {css_path}")
 
-
-
-# ----------------------------
-# Header Image and Title
-# ----------------------------
+local_css("static/css/style.css")
 
 # ----------------------------
 # Session State
@@ -67,10 +64,44 @@ def login_user(email, password):
         st.error("❌ User not found")
 
 # ----------------------------
-# Login / Signup
+# Notification Bell
 # ----------------------------
+def show_notifications_icon():
+    st.markdown("""
+        <style>
+        .notification-bell {
+            position: fixed;
+            top: 20px;
+            right: 30px;
+            font-size: 28px;
+            cursor: pointer;
+            z-index: 1000;
+        }
+        .notification-count {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background: red;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 12px;
+        }
+        </style>
+    """, unsafe_allow_html=True)
+
+    notifications = supabase.table("notifications").select("*").execute().data
+    pending_count = len([n for n in notifications if n['delivery_status'] == "Pending"]) if notifications else 0
+
+    st.markdown(f"""
+        <div class="notification-bell" onclick="window.location.href='#notifications'">
+            🔔
+            <span class="notification-count">{pending_count}</span>
+        </div>
+    """, unsafe_allow_html=True)
+
 # ----------------------------
-# Login / Signup (Improved UI)
+# Login / Signup UI
 # ----------------------------
 if not st.session_state.logged_in:
     st.markdown("<div class='login-card'>", unsafe_allow_html=True)
@@ -95,13 +126,14 @@ if not st.session_state.logged_in:
 
     st.markdown("</div>", unsafe_allow_html=True)
 
-
 # ----------------------------
-# Dashboard Tabs
+# Dashboard
 # ----------------------------
 if st.session_state.logged_in:
-    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
-        ["👤 Patients", "🧑‍⚕️ Caregivers", "💊 Medicines", "📋 Prescriptions", "⏰ Reminders", "🔔 Notifications"]
+    show_notifications_icon()  # Top-right bell
+
+    tab1, tab2, tab3, tab4, tab5 = st.tabs(
+        ["👤 Patients", "🧑‍⚕️ Caregivers", "💊 Medicines", "📋 Prescriptions", "⏰ Reminders"]
     )
 
     # Patients Tab
@@ -209,23 +241,15 @@ if st.session_state.logged_in:
                 }).execute()
                 st.success(f"Reminder added for Prescription ID {prescription_id}!")
 
-    # Notifications Tab
-    with tab6:
-        st.subheader("Notifications")
-        notifications = supabase.table("notifications").select("*").execute().data
-        st.dataframe(notifications if notifications else [])
-        with st.form("send_notification_form"):
-            reminder_id = st.number_input("Reminder ID", min_value=0, key="notif_rem")
-            message = st.text_area("Message", key="notif_msg")
-            submitted = st.form_submit_button("Send Notification")
-            if submitted:
-                supabase.table("notifications").insert({
-                    "reminder_id": reminder_id,
-                    "sent_time": datetime.datetime.now().isoformat(),
-                    "delivery_status": "Sent",
-                    "message": message
-                }).execute()
-                st.success(f"Notification sent for Reminder ID {reminder_id}!")
+        # Display notifications in expander
+        with st.expander("🔔 Notifications", expanded=False):
+            notifications = supabase.table("notifications").select("*").execute().data
+            if notifications:
+                for n in notifications[::-1]:
+                    status = n['delivery_status']
+                    st.write(f"📌 {n['message']} - {status} at {n['sent_time']}")
+            else:
+                st.write("No notifications yet.")
 
     # Logout
     if st.button("Logout"):
