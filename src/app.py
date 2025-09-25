@@ -238,8 +238,10 @@ if st.session_state.logged_in:
     # Logout button
 if st.button("Logout"):
     st.session_state.logged_in = False
-    st.session_state.user = None
-    st.query_params() # reset query params (optional)
+    # Set query parameters
+    st.session_state.page_reload = True  # or any flag you need
+    st.query_params = {"page": "login"}
+# reset query params (optional)
     st.session_state.page_reload = True
     st.stop()  # stops execution and forces Streamlit to re-run
 
