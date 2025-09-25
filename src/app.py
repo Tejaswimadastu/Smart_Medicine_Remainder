@@ -5,10 +5,6 @@ from dotenv import load_dotenv
 import bcrypt
 import datetime
 
-if "page_reload" in st.session_state and st.session_state.page_reload:
-    st.session_state.page_reload = False
-    st.stop() 
-
 # ----------------------------
 # Load environment variables
 # ----------------------------
@@ -36,7 +32,7 @@ def local_css(file_name):
 local_css("static/css/style.css")
 
 # ----------------------------
-# Session State
+# Session state
 # ----------------------------
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
@@ -45,7 +41,7 @@ if 'show_notifications' not in st.session_state:
     st.session_state.show_notifications = False
 
 # ----------------------------
-# Helper Functions
+# Helper functions
 # ----------------------------
 def signup_user(name, email, password):
     hashed_pw = bcrypt.hashpw(password.encode('utf-8'), bcrypt.gensalt()).decode('utf-8')
@@ -63,7 +59,7 @@ def login_user(email, password):
         if bcrypt.checkpw(password.encode('utf-8'), hashed_pw.encode('utf-8')):
             st.session_state.logged_in = True
             st.session_state.user = user[0]
-            st.success(f"Welcome {user[0]['name']}!")
+            st.experimental_rerun()  # go to dashboard
         else:
             st.error("❌ Incorrect password")
     else:
@@ -90,23 +86,32 @@ def show_notifications_icon():
             st.write("No notifications yet.")
 
 # ----------------------------
+# Logout button
+# ----------------------------
+if st.session_state.logged_in:
+    if st.button("Logout"):
+        st.session_state.logged_in = False
+        st.session_state.user = None
+        st.experimental_rerun()  # go back to login page
+
+# ----------------------------
 # Login / Signup UI
 # ----------------------------
 if not st.session_state.logged_in:
-    st.markdown("<div class='login-card'>", unsafe_allow_html=True)
+    st.markdown("<div class='login-card' style='margin-top:0px;'>", unsafe_allow_html=True)  # remove top margin
     st.image(os.path.join(os.path.dirname(__file__), "static", "images", "logo.png"), width=120)
     st.markdown("<h2>🔐 Welcome to MediPal</h2>", unsafe_allow_html=True)
     st.markdown("<p style='text-align:center; color:#555;'>Login or create an account to manage your medical reminders.</p>", unsafe_allow_html=True)
 
     choice = st.radio("Select Option", ["Login", "Sign Up"], horizontal=True)
-    
+
     if choice == "Sign Up":
         name = st.text_input("👤 Full Name")
         email = st.text_input("📧 Email")
         password = st.text_input("🔑 Password", type="password")
         if st.button("Create Account"):
             signup_user(name, email, password)
-    
+
     if choice == "Login":
         email = st.text_input("📧 Email", key="login_email")
         password = st.text_input("🔑 Password", type="password", key="login_password")
@@ -125,7 +130,9 @@ if st.session_state.logged_in:
         ["👤 Patients", "🧑‍⚕️ Caregivers", "💊 Medicines", "📋 Prescriptions", "⏰ Reminders"]
     )
 
+    # ----------------------------
     # Patients Tab
+    # ----------------------------
     with tab1:
         st.subheader("Patients")
         patients = supabase.table("patients").select("*").execute().data
@@ -149,7 +156,9 @@ if st.session_state.logged_in:
                 }).execute()
                 st.success(f"Patient {name} added!")
 
+    # ----------------------------
     # Caregivers Tab
+    # ----------------------------
     with tab2:
         st.subheader("Caregivers")
         caregivers = supabase.table("caregivers").select("*").execute().data
@@ -171,7 +180,9 @@ if st.session_state.logged_in:
                 }).execute()
                 st.success(f"Caregiver {name} added!")
 
+    # ----------------------------
     # Medicines Tab
+    # ----------------------------
     with tab3:
         st.subheader("Medicines")
         medicines = supabase.table("medicines").select("*").execute().data
@@ -191,7 +202,9 @@ if st.session_state.logged_in:
                 }).execute()
                 st.success(f"Medicine {name} added!")
 
+    # ----------------------------
     # Prescriptions Tab
+    # ----------------------------
     with tab4:
         st.subheader("Prescriptions")
         prescriptions = supabase.table("prescriptions").select("*").execute().data
@@ -213,7 +226,9 @@ if st.session_state.logged_in:
                 }).execute()
                 st.success(f"Prescription added for Patient ID {patient_id}!")
 
+    # ----------------------------
     # Reminders Tab
+    # ----------------------------
     with tab5:
         st.subheader("Reminders")
         reminders = supabase.table("reminders").select("*").execute().data
@@ -229,6 +244,7 @@ if st.session_state.logged_in:
                     "status": "Pending"
                 }).execute()
                 st.success(f"Reminder added for Prescription ID {prescription_id}!")
+
 
     # Logout
     # Logout
