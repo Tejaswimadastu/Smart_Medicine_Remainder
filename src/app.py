@@ -227,7 +227,14 @@ if st.session_state.logged_in:
                 st.success(f"Reminder added for Prescription ID {prescription_id}!")
 
     # Logout
-    if st.button("Logout"):
+    # Logout
+    def logout():
         st.session_state.logged_in = False
         st.session_state.user = None
+        st.session_state.show_notifications = False
         st.experimental_rerun()
+
+    if st.session_state.logged_in:
+        if st.button("Logout"):
+            logout()
+
