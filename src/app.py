@@ -23,22 +23,16 @@ st.set_page_config(page_title="MediPal Dashboard", layout="wide")
 def local_css(file_name):
     css_path = os.path.join(os.path.dirname(__file__), file_name)
     if os.path.exists(css_path):
-        with open(css_path) as f:
+        with open(css_path, "r", encoding="utf-8") as f:
             st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
     else:
         st.warning(f"CSS file not found: {css_path}")
 
-local_css("static/css/style.css")
 
 
 # ----------------------------
 # Header Image and Title
 # ----------------------------
-logo_path = os.path.join(os.path.dirname(__file__), "static/images/logo.png")
-if os.path.exists(logo_path):
-    st.image(logo_path, width=150)
-else:
-    st.warning("Logo not found! Place it in static/images/logo.png")
 
 # ----------------------------
 # Session State
@@ -80,7 +74,7 @@ def login_user(email, password):
 # ----------------------------
 if not st.session_state.logged_in:
     st.markdown("<div class='login-card'>", unsafe_allow_html=True)
-    st.image("static/images/logo.png", width=120)
+    st.image(os.path.join(os.path.dirname(__file__), "static", "images", "logo.png"), width=120)
     st.markdown("<h2>🔐 Welcome to MediPal</h2>", unsafe_allow_html=True)
     st.markdown("<p style='text-align:center; color:#555;'>Login or create an account to manage your medical reminders.</p>", unsafe_allow_html=True)
 
