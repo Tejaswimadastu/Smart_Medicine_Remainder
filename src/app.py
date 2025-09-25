@@ -37,6 +37,8 @@ local_css("static/css/style.css")
 if 'logged_in' not in st.session_state:
     st.session_state.logged_in = False
     st.session_state.user = None
+if 'show_notifications' not in st.session_state:
+    st.session_state.show_notifications = False
 
 # ----------------------------
 # Helper Functions
@@ -67,38 +69,21 @@ def login_user(email, password):
 # Notification Bell
 # ----------------------------
 def show_notifications_icon():
-    st.markdown("""
-        <style>
-        .notification-bell {
-            position: fixed;
-            top: 20px;
-            right: 30px;
-            font-size: 28px;
-            cursor: pointer;
-            z-index: 1000;
-        }
-        .notification-count {
-            position: absolute;
-            top: -8px;
-            right: -8px;
-            background: red;
-            color: white;
-            border-radius: 50%;
-            padding: 2px 6px;
-            font-size: 12px;
-        }
-        </style>
-    """, unsafe_allow_html=True)
-
     notifications = supabase.table("notifications").select("*").execute().data
     pending_count = len([n for n in notifications if n['delivery_status'] == "Pending"]) if notifications else 0
 
-    st.markdown(f"""
-        <div class="notification-bell" onclick="window.location.href='#notifications'">
-            🔔
-            <span class="notification-count">{pending_count}</span>
-        </div>
-    """, unsafe_allow_html=True)
+    col1, col2, col3 = st.columns([8, 1, 1])
+    with col3:
+        if st.button(f"🔔 {pending_count}"):
+            st.session_state.show_notifications = not st.session_state.show_notifications
+
+    if st.session_state.show_notifications:
+        st.markdown("### 🔔 Notifications")
+        if notifications:
+            for n in notifications[::-1]:
+                st.write(f"📌 {n['message']} - {n['delivery_status']} at {n['sent_time']}")
+        else:
+            st.write("No notifications yet.")
 
 # ----------------------------
 # Login / Signup UI
@@ -240,16 +225,6 @@ if st.session_state.logged_in:
                     "status": "Pending"
                 }).execute()
                 st.success(f"Reminder added for Prescription ID {prescription_id}!")
-
-        # Display notifications in expander
-        with st.expander("🔔 Notifications", expanded=False):
-            notifications = supabase.table("notifications").select("*").execute().data
-            if notifications:
-                for n in notifications[::-1]:
-                    status = n['delivery_status']
-                    st.write(f"📌 {n['message']} - {status} at {n['sent_time']}")
-            else:
-                st.write("No notifications yet.")
 
     # Logout
     if st.button("Logout"):
