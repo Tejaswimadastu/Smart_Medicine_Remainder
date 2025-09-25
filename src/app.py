@@ -228,13 +228,15 @@ if st.session_state.logged_in:
 
     # Logout
     # Logout
-    def logout():
-        st.session_state.logged_in = False
-        st.session_state.user = None
-        st.session_state.show_notifications = False
-        st.experimental_rerun()
-
+    # ----------------------------
+# Logout button
+# ----------------------------
     if st.session_state.logged_in:
         if st.button("Logout"):
-            logout()
+        # Reset session state
+            st.session_state.logged_in = False
+            st.session_state.user = None
+        # Rerun script so login page is displayed
+            st.experimental_rerun()
+
 
