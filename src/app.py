@@ -5,6 +5,17 @@ from dotenv import load_dotenv
 import bcrypt
 import datetime
 
+st.set_page_config(page_title="MediPal", page_icon="💊", layout="centered")
+
+# Hide Streamlit's default header and footer
+hide_st_style = """
+    <style>
+    header {visibility: hidden;}
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    </style>
+"""
+st.markdown(hide_st_style, unsafe_allow_html=True)
 # ----------------------------
 # Load environment variables
 # ----------------------------
