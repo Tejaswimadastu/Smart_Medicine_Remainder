@@ -239,7 +239,7 @@ if st.session_state.logged_in:
 if st.button("Logout"):
     st.session_state.logged_in = False
     st.session_state.user = None
-    st.experimental_set_query_params()  # reset query params (optional)
+    st.query_params() # reset query params (optional)
     st.session_state.page_reload = True
     st.stop()  # stops execution and forces Streamlit to re-run
 
