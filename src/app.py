@@ -4,7 +4,6 @@ import os
 from dotenv import load_dotenv
 import bcrypt
 import datetime
-
 # ----------------------------
 # Load environment variables
 # ----------------------------
@@ -76,24 +75,32 @@ def login_user(email, password):
 # ----------------------------
 # Login / Signup
 # ----------------------------
+# ----------------------------
+# Login / Signup (Improved UI)
+# ----------------------------
 if not st.session_state.logged_in:
-    st.subheader("💻 Login / Signup")
-    choice = st.radio("Select Option", ["Login", "Sign Up"])
+    st.markdown("<div class='login-card'>", unsafe_allow_html=True)
+    st.image("static/images/logo.png", width=120)
+    st.markdown("<h2>🔐 Welcome to MediPal</h2>", unsafe_allow_html=True)
+    st.markdown("<p style='text-align:center; color:#555;'>Login or create an account to manage your medical reminders.</p>", unsafe_allow_html=True)
+
+    choice = st.radio("Select Option", ["Login", "Sign Up"], horizontal=True)
     
     if choice == "Sign Up":
-        st.subheader("Create a new account")
-        name = st.text_input("Name")
-        email = st.text_input("Email")
-        password = st.text_input("Password", type="password")
-        if st.button("Sign Up"):
+        name = st.text_input("👤 Full Name")
+        email = st.text_input("📧 Email")
+        password = st.text_input("🔑 Password", type="password")
+        if st.button("Create Account"):
             signup_user(name, email, password)
     
     if choice == "Login":
-        st.subheader("Login to your account")
-        email = st.text_input("Email", key="login_email")
-        password = st.text_input("Password", type="password", key="login_password")
+        email = st.text_input("📧 Email", key="login_email")
+        password = st.text_input("🔑 Password", type="password", key="login_password")
         if st.button("Login"):
             login_user(email, password)
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
 
 # ----------------------------
 # Dashboard Tabs

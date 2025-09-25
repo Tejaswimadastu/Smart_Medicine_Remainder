@@ -1,17 +1,82 @@
+/* 🌈 Global Page Background */
 body {
-    background-color: #f4f6f8;
-    font-family: Arial, sans-serif;
+    background: linear-gradient(135deg, #e0f7fa, #ffffff);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    color: #333;
 }
 
-.stButton>button {
-    background-color: #4CAF50;
+/* 🧰 Main container styling */
+.block-container {
+    padding-top: 2rem !important;
+    max-width: 900px;
+    margin: auto;
+}
+
+/* 🪪 Login / Signup Card */
+.login-card {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 2.5rem;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+    margin-top: 3rem;
+    animation: fadeIn 0.8s ease-in-out;
+}
+
+.login-card h2 {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: #2e7d32;
+}
+
+.login-card label {
+    font-weight: 600;
+    margin-bottom: 0.3rem;
+    display: inline-block;
+}
+
+/* ✏️ Input Fields */
+.stTextInput > div > div > input,
+.stPassword > div > div > input {
+    border-radius: 10px !important;
+    padding: 12px !important;
+    border: 1px solid #ccc !important;
+    font-size: 1rem !important;
+}
+
+/* 🔘 Buttons */
+.stButton > button {
+    width: 100%;
+    background: linear-gradient(135deg, #43cea2, #185a9d);
     color: white;
-    border-radius: 5px;
-    padding: 0.5rem 1rem;
-    margin-top: 5px;
+    border: none;
+    padding: 0.8rem;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
 }
 
+.stButton > button:hover {
+    transform: translateY(-3px);
+    background: linear-gradient(135deg, #185a9d, #43cea2);
+}
+
+/* 📊 Tables and DataFrames */
 .stDataFrame {
     border-radius: 8px;
     padding: 10px;
+    background-color: #ffffff;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+}
+
+/* ✨ Tabs */
+[data-testid="stTabs"] {
+    margin-top: 2rem;
+}
+
+/* 🔥 Fade-in animation */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
 }
