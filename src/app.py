@@ -5,6 +5,10 @@ from dotenv import load_dotenv
 import bcrypt
 import datetime
 
+if "page_reload" in st.session_state and st.session_state.page_reload:
+    st.session_state.page_reload = False
+    st.stop() 
+
 # ----------------------------
 # Load environment variables
 # ----------------------------
@@ -231,12 +235,12 @@ if st.session_state.logged_in:
     # ----------------------------
 # Logout button
 # ----------------------------
-    if st.session_state.logged_in:
-        if st.button("Logout"):
-        # Reset session state
-            st.session_state.logged_in = False
-            st.session_state.user = None
-        # Rerun script so login page is displayed
-            st.experimental_rerun()
+    # Logout button
+if st.button("Logout"):
+    st.session_state.logged_in = False
+    st.session_state.user = None
+    st.experimental_set_query_params()  # reset query params (optional)
+    st.session_state.page_reload = True
+    st.stop()  # stops execution and forces Streamlit to re-run
 
 
