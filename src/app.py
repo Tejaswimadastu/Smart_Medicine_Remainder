@@ -26,8 +26,6 @@ def local_css(file_name):
     if os.path.exists(css_path):
         with open(css_path, "r", encoding="utf-8") as f:
             st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
-    else:
-        st.warning(f"CSS file not found: {css_path}")
 
 local_css("static/css/style.css")
 
@@ -59,7 +57,7 @@ def login_user(email, password):
         if bcrypt.checkpw(password.encode('utf-8'), hashed_pw.encode('utf-8')):
             st.session_state.logged_in = True
             st.session_state.user = user[0]
-            st.stop()  # go to dashboard
+            st.experimental_rerun()
         else:
             st.error("❌ Incorrect password")
     else:
@@ -86,19 +84,10 @@ def show_notifications_icon():
             st.write("No notifications yet.")
 
 # ----------------------------
-# Logout button
-# ----------------------------
-if st.session_state.logged_in:
-    if st.button("Logout"):
-        st.session_state.logged_in = False
-        st.session_state.user = None
-        st.experimental_rerun()  # go back to login page
-
-# ----------------------------
 # Login / Signup UI
 # ----------------------------
 if not st.session_state.logged_in:
-    st.markdown("<div class='login-card' style='margin-top:0px;'>", unsafe_allow_html=True)  # remove top margin
+    st.markdown("<div class='login-card'>", unsafe_allow_html=True)
     st.image(os.path.join(os.path.dirname(__file__), "static", "images", "logo.png"), width=120)
     st.markdown("<h2>🔐 Welcome to MediPal</h2>", unsafe_allow_html=True)
     st.markdown("<p style='text-align:center; color:#555;'>Login or create an account to manage your medical reminders.</p>", unsafe_allow_html=True)
@@ -124,15 +113,13 @@ if not st.session_state.logged_in:
 # Dashboard
 # ----------------------------
 if st.session_state.logged_in:
-    show_notifications_icon()  # Top-right bell
+    show_notifications_icon()
 
     tab1, tab2, tab3, tab4, tab5 = st.tabs(
         ["👤 Patients", "🧑‍⚕️ Caregivers", "💊 Medicines", "📋 Prescriptions", "⏰ Reminders"]
     )
 
-    # ----------------------------
-    # Patients Tab
-    # ----------------------------
+    # Patients
     with tab1:
         st.subheader("Patients")
         patients = supabase.table("patients").select("*").execute().data
@@ -156,9 +143,7 @@ if st.session_state.logged_in:
                 }).execute()
                 st.success(f"Patient {name} added!")
 
-    # ----------------------------
-    # Caregivers Tab
-    # ----------------------------
+    # Caregivers
     with tab2:
         st.subheader("Caregivers")
         caregivers = supabase.table("caregivers").select("*").execute().data
@@ -180,9 +165,7 @@ if st.session_state.logged_in:
                 }).execute()
                 st.success(f"Caregiver {name} added!")
 
-    # ----------------------------
-    # Medicines Tab
-    # ----------------------------
+    # Medicines
     with tab3:
         st.subheader("Medicines")
         medicines = supabase.table("medicines").select("*").execute().data
@@ -202,9 +185,7 @@ if st.session_state.logged_in:
                 }).execute()
                 st.success(f"Medicine {name} added!")
 
-    # ----------------------------
-    # Prescriptions Tab
-    # ----------------------------
+    # Prescriptions
     with tab4:
         st.subheader("Prescriptions")
         prescriptions = supabase.table("prescriptions").select("*").execute().data
@@ -226,9 +207,7 @@ if st.session_state.logged_in:
                 }).execute()
                 st.success(f"Prescription added for Patient ID {patient_id}!")
 
-    # ----------------------------
-    # Reminders Tab
-    # ----------------------------
+    # Reminders
     with tab5:
         st.subheader("Reminders")
         reminders = supabase.table("reminders").select("*").execute().data
@@ -245,20 +224,8 @@ if st.session_state.logged_in:
                 }).execute()
                 st.success(f"Reminder added for Prescription ID {prescription_id}!")
 
-
     # Logout
-    # Logout
-    # ----------------------------
-# Logout button
-# ----------------------------
-    # Logout button
-if st.button("Logout"):
-    st.session_state.logged_in = False
-    # Set query parameters
-    st.session_state.page_reload = True  # or any flag you need
-    st.query_params = {"page": "login"}
-# reset query params (optional)
-    st.session_state.page_reload = True
-    st.stop()  # stops execution and forces Streamlit to re-run
-
-
+    if st.button("🚪 Logout"):
+        st.session_state.logged_in = False
+        st.session_state.user = None
+        st.experimental_rerun()
